@@ -1,4 +1,5 @@
 import logging
+import sys
 
 from pyspark.context import SparkContext
 from pyspark.sql import SparkSession
@@ -10,6 +11,7 @@ from pyspark.sql import HiveContext
 
 
 def clean_flights_data(raw_df):
+    # Casting and filtering the data
     raw_df = raw_df.select(
                 to_date(raw_df["Fecha"], format="dd/MM/yyyy").alias("fecha"), 
                 date_format(to_timestamp(raw_df["Hora UTC"], format="HH:mm"), "HH:mm").alias("horaUTC"),
@@ -22,11 +24,13 @@ def clean_flights_data(raw_df):
                 raw_df["Aeronave"].alias("aeronave"),
                 raw_df["Pasajeros"].cast('int').alias("pasajeros")
                 ).filter((raw_df["Clasificación Vuelo"]=='Domestico') | (raw_df["Clasificación Vuelo"]=='Doméstico'))
+    # Fill the Nulls with 0
     clean_df = raw_df.na.fill(value = 0, subset = 'pasajeros')
     return clean_df 
 
 
 def clean_airports_data(raw_df):
+    # Casting and filtering the data
     raw_df = raw_df.select(
                 raw_df["local"].alias("aeropuerto"),
                 raw_df["oaci"].alias("oac"),
@@ -50,6 +54,7 @@ def clean_airports_data(raw_df):
                 raw_df["concesionado"],
                 raw_df["provincia"]
                 )
+    # Fill the Nulls with 0
     clean_df = raw_df.na.fill(value = 0, subset = 'distancia_ref')
    
     return clean_df
@@ -67,6 +72,7 @@ def main_process():
     except Exception as e:
         logging.error("############################An error occurred starting the Spark session!!")
         logging.error(e.__str__())
+        sys.exit(1) # Added to ensure an error output in Airflow
         
     # Load the .csv from HDFS in a df taking the header to get the column names
     rdf_f2021 = spark.read.option("sep", ";").option("header", "true").csv("hdfs://172.17.0.2:9000/ingest/2021-informe-ministerio.csv")
@@ -90,8 +96,6 @@ def main_process():
     
     #LOAD DATA IN DW(HIVE)
     try:
-        
-        
         #Uncomment to run the first time. 
         # hc.sql("CREATE TABLE AS SELECT * FROM temp_aeropuertos;")
         
@@ -111,12 +115,12 @@ def main_process():
             ")
 
         logging.info("ADDED DATA IN HIVE TABLES!")
+        sys.exit(0)
     except Exception as e: 
         logging.error("#######An error occurred loAding the data in Hive!!")
         logging.error(e.__str__())
+        sys.exit(1) # Added to ensure an error output in Airflow
 
-
-    return 
 
 if __name__ == "__main__": 
     main_process()
