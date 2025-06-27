@@ -59,7 +59,10 @@ with DAG(
 
     transformation_and_load = BashOperator(
         task_id='transform_and_load',
-        bash_command='/home/hadoop/spark/bin/spark-submit --files /home/hadoop/hive/conf/hive-site.xml /home/hadoop/scripts/flights_data_transformation_and_load.py',
+        bash_command="""/home/hadoop/spark/bin/spark-submit\
+                --files /home/hadoop/hive/conf/hive-site.xml\
+                /home/hadoop/scripts/flights_data_transformation_and_load.py\
+            """,
         )
 
     start_process >> get_files >> prepare_files_in_hdfs\
