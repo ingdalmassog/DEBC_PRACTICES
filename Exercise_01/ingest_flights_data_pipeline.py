@@ -32,6 +32,8 @@ with DAG(
     tags=['ingest', 'transform', 'flights', 'data']
 ) as dag:
 
+    dag.doc_md = f"""DAG to ingest flights data in a Hive"""
+    
     start_process = EmptyOperator(
         task_id='start_process',
     )

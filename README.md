@@ -24,5 +24,12 @@ SHOW TABLES;
 
 Finally run the pipeline triggering the DAG manually. 
 
+
+# Exercise_#02
+The exercise is based on the edvai_hadoop container as the environment. 
+The user should copy the different files into the Airflow folders using the 
+logic than the previous item.
+
+
 # To run pyspark in the console 
 /home/hadoop/spark/bin/pyspark
